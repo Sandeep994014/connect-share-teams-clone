@@ -1,0 +1,143 @@
+
+import { useState } from "react";
+import { Phone, Video, MessageCircle, MoreVertical, UserPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+
+interface TeamMember {
+  id: string;
+  name: string;
+  avatar: string;
+  status: "online" | "away" | "busy" | "offline";
+  role: string;
+  lastSeen?: string;
+}
+
+interface TeamMembersProps {
+  teamName: string;
+}
+
+const teamMembers: TeamMember[] = [
+  {
+    id: "1",
+    name: "Sarah Johnson",
+    avatar: "SJ",
+    status: "online",
+    role: "Team Lead"
+  },
+  {
+    id: "2",
+    name: "Mike Chen",
+    avatar: "MC",
+    status: "busy",
+    role: "Developer"
+  },
+  {
+    id: "3",
+    name: "Alex Rivera",
+    avatar: "AR",
+    status: "away",
+    role: "Designer"
+  },
+  {
+    id: "4",
+    name: "Emma Wilson",
+    avatar: "EW",
+    status: "online",
+    role: "Marketing"
+  },
+  {
+    id: "5",
+    name: "David Kim",
+    avatar: "DK",
+    status: "offline",
+    role: "Developer",
+    lastSeen: "2 hours ago"
+  }
+];
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "online": return "bg-green-500";
+    case "busy": return "bg-red-500";
+    case "away": return "bg-yellow-500";
+    case "offline": return "bg-gray-400";
+    default: return "bg-gray-400";
+  }
+};
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "online": return "Available";
+    case "busy": return "Busy";
+    case "away": return "Away";
+    case "offline": return "Offline";
+    default: return status;
+  }
+};
+
+export function TeamMembers({ teamName }: TeamMembersProps) {
+  const [hoveredMember, setHoveredMember] = useState<string | null>(null);
+
+  return (
+    <div className="w-80 bg-gray-50 border-l border-gray-200 flex flex-col">
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-gray-900">Team Members</h3>
+          <Button variant="ghost" size="sm">
+            <UserPlus className="h-4 w-4" />
+          </Button>
+        </div>
+        <p className="text-sm text-gray-500">{teamMembers.length} members</p>
+      </div>
+      
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-3">
+          {teamMembers.map((member) => (
+            <div
+              key={member.id}
+              className="flex items-center p-3 bg-white rounded-lg hover:shadow-sm transition-shadow cursor-pointer group"
+              onMouseEnter={() => setHoveredMember(member.id)}
+              onMouseLeave={() => setHoveredMember(null)}
+            >
+              <div className="relative mr-3">
+                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium">
+                  {member.avatar}
+                </div>
+                <div className={`absolute bottom-0 right-0 w-3 h-3 ${getStatusColor(member.status)} rounded-full border-2 border-white`}></div>
+              </div>
+              
+              <div className="flex-1">
+                <p className="font-medium text-gray-900 text-sm">{member.name}</p>
+                <p className="text-xs text-gray-500">{member.role}</p>
+                <div className="flex items-center mt-1">
+                  <Badge variant="outline" className="text-xs">
+                    {getStatusText(member.status)}
+                  </Badge>
+                  {member.lastSeen && (
+                    <span className="text-xs text-gray-400 ml-2">{member.lastSeen}</span>
+                  )}
+                </div>
+              </div>
+              
+              {hoveredMember === member.id && member.status !== "offline" && (
+                <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="sm" className="p-1">
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="p-1">
+                    <Phone className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="p-1">
+                    <Video className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
