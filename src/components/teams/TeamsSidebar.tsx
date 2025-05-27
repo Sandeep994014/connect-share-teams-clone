@@ -36,7 +36,8 @@ const menuItems = [
 ];
 
 export function TeamsSidebar({ activeView, setActiveView, selectedTeam, setSelectedTeam }: TeamsSidebarProps) {
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
 
   return (
     <Sidebar className={`${collapsed ? "w-16" : "w-64"} bg-[#464775] text-white border-r-0`}>
