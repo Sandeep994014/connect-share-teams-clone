@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Phone, Video, MessageCircle, MoreVertical, UserPlus, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+import { useChat } from "@/contexts/ChatContext";
 
 interface TeamMember {
   id: string;
@@ -13,10 +13,6 @@ interface TeamMember {
   role: string;
   lastSeen?: string;
   isOwner?: boolean;
-}
-
-interface TeamMembersProps {
-  teamName: string;
 }
 
 const teamMembers: TeamMember[] = [
@@ -79,8 +75,13 @@ const getStatusText = (status: string) => {
   }
 };
 
-export function TeamMembers({ teamName }: TeamMembersProps) {
+export function TeamMembers() {
   const [hoveredMember, setHoveredMember] = useState<string | null>(null);
+  const { startPersonalChat } = useChat();
+
+  const handleStartChat = (member: TeamMember) => {
+    startPersonalChat(member.id, member.name, member.avatar);
+  };
 
   return (
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
@@ -143,7 +144,12 @@ export function TeamMembers({ teamName }: TeamMembersProps) {
               
               {hoveredMember === member.id && member.status !== "offline" && (
                 <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 hover:bg-gray-200"
+                    onClick={() => handleStartChat(member)}
+                  >
                     <MessageCircle className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-200">

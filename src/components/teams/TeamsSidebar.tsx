@@ -1,6 +1,5 @@
 
-import { useState } from "react";
-import { MessageCircle, Video, File, Calendar, Phone, Settings, Users, Hash } from "lucide-react";
+import { MessageCircle, Video, File, Calendar, Hash, User } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,31 +12,24 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useChat } from "@/contexts/ChatContext";
 
 interface TeamsSidebarProps {
   activeView: "chat" | "video" | "files" | "calendar";
   setActiveView: (view: "chat" | "video" | "files" | "calendar") => void;
-  selectedTeam: string;
-  setSelectedTeam: (team: string) => void;
 }
-
-const teams = [
-  { name: "General", members: 12, unread: 3, type: "public" },
-  { name: "Development", members: 8, unread: 0, type: "private" },
-  { name: "Marketing", members: 6, unread: 1, type: "public" },
-  { name: "Design", members: 4, unread: 0, type: "private" },
-];
 
 const menuItems = [
   { title: "Chat", icon: MessageCircle, view: "chat" as const },
-  { title: "Teams", icon: Users, view: "video" as const },
+  { title: "Teams", icon: Video, view: "video" as const },
   { title: "Files", icon: File, view: "files" as const },
   { title: "Calendar", icon: Calendar, view: "calendar" as const },
 ];
 
-export function TeamsSidebar({ activeView, setActiveView, selectedTeam, setSelectedTeam }: TeamsSidebarProps) {
+export function TeamsSidebar({ activeView, setActiveView }: TeamsSidebarProps) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { chats, activeChat, setActiveChat } = useChat();
 
   return (
     <Sidebar className={`${collapsed ? "w-16" : "w-64"} bg-[#292929] text-white border-r border-gray-700`}>
@@ -77,32 +69,43 @@ export function TeamsSidebar({ activeView, setActiveView, selectedTeam, setSelec
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-gray-400 text-xs uppercase tracking-wider font-semibold px-4">
-            {!collapsed && "Your Teams"}
+            {!collapsed && "Recent Chats"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {teams.map((team) => (
-                <SidebarMenuItem key={team.name}>
+              {chats.map((chat) => (
+                <SidebarMenuItem key={chat.id}>
                   <SidebarMenuButton
-                    onClick={() => setSelectedTeam(team.name)}
+                    onClick={() => {
+                      setActiveChat(chat.id);
+                      setActiveView("chat");
+                    }}
                     className={`
                       mx-2 my-1 rounded-md transition-all duration-200
-                      ${selectedTeam === team.name 
+                      ${activeChat === chat.id 
                         ? "bg-[#5B5FC7] text-white shadow-sm" 
                         : "text-gray-300 hover:bg-gray-700 hover:text-white"
                       }
                     `}
                   >
-                    <Hash className="h-4 w-4" />
+                    {chat.type === "team" ? (
+                      <Hash className="h-4 w-4" />
+                    ) : (
+                      <User className="h-4 w-4" />
+                    )}
                     {!collapsed && (
                       <div className="flex-1 flex items-center justify-between ml-3">
                         <div className="flex flex-col items-start">
-                          <span className="font-medium text-sm">{team.name}</span>
-                          <span className="text-xs text-gray-400">{team.members} members</span>
+                          <span className="font-medium text-sm truncate">{chat.name}</span>
+                          {chat.lastMessage && (
+                            <span className="text-xs text-gray-400 truncate max-w-32">
+                              {chat.lastMessage.content}
+                            </span>
+                          )}
                         </div>
-                        {team.unread > 0 && (
+                        {chat.unreadCount > 0 && (
                           <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center font-medium">
-                            {team.unread}
+                            {chat.unreadCount}
                           </span>
                         )}
                       </div>

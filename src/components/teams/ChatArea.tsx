@@ -5,89 +5,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EmojiPicker } from "./EmojiPicker";
+import { useChat } from "@/contexts/ChatContext";
 
-interface Message {
-  id: string;
-  user: string;
-  avatar: string;
-  content: string;
-  timestamp: string;
-  type: "text" | "file";
-  fileName?: string;
-  isMe?: boolean;
-}
-
-interface ChatAreaProps {
-  teamName: string;
-}
-
-const sampleMessages: Message[] = [
-  {
-    id: "1",
-    user: "Sarah Johnson",
-    avatar: "SJ",
-    content: "Hey team! Just wanted to share the latest design mockups for the project. Looking forward to your feedback!",
-    timestamp: "10:30 AM",
-    type: "text",
-    isMe: false
-  },
-  {
-    id: "2",
-    user: "Mike Chen",
-    avatar: "MC",
-    content: "project-specs.pdf",
-    timestamp: "10:32 AM",
-    type: "file",
-    fileName: "project-specs.pdf",
-    isMe: false
-  },
-  {
-    id: "3",
-    user: "Alex Rivera",
-    avatar: "AR",
-    content: "Looks great! I'll review the specifications and get back to you by EOD. Thanks for sharing this.",
-    timestamp: "10:35 AM",
-    type: "text",
-    isMe: false
-  }
-];
-
-export function ChatArea({ teamName }: ChatAreaProps) {
-  const [messages, setMessages] = useState<Message[]>(sampleMessages);
+export function ChatArea() {
+  const { chats, activeChat, sendMessage } = useChat();
   const [newMessage, setNewMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const currentChat = chats.find(chat => chat.id === activeChat);
+
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const message: Message = {
-        id: Date.now().toString(),
+    if (newMessage.trim() && currentChat) {
+      sendMessage(currentChat.id, {
         user: "You",
         avatar: "Y",
         content: newMessage,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         type: "text",
         isMe: true
-      };
-      setMessages([...messages, message]);
+      });
       setNewMessage("");
     }
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const message: Message = {
-        id: Date.now().toString(),
+    if (file && currentChat) {
+      sendMessage(currentChat.id, {
         user: "You",
         avatar: "Y",
         content: file.name,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         type: "file",
         fileName: file.name,
         isMe: true
-      };
-      setMessages([...messages, message]);
+      });
     }
   };
 
@@ -96,11 +47,22 @@ export function ChatArea({ teamName }: ChatAreaProps) {
     setShowEmojiPicker(false);
   };
 
+  if (!currentChat) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No chat selected</h3>
+          <p className="text-gray-600">Choose a team or start a personal conversation</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col bg-gray-50">
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-6">
-          {messages.map((message) => (
+          {currentChat.messages.map((message) => (
             <div key={message.id} className="flex space-x-3">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${
                 message.isMe ? 'bg-[#5B5FC7]' : 'bg-gray-600'
@@ -176,7 +138,7 @@ export function ChatArea({ teamName }: ChatAreaProps) {
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
-                placeholder={`Type a message in ${teamName}...`}
+                placeholder={`Type a message in ${currentChat.name}...`}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                 className="pr-12 border-gray-300 focus:border-[#5B5FC7] focus:ring-[#5B5FC7] rounded-lg"
               />

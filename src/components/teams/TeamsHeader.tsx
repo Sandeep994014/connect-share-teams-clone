@@ -2,19 +2,25 @@
 import { Phone, Video, Settings, Search, MoreHorizontal, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useChat } from "@/contexts/ChatContext";
 
 interface TeamsHeaderProps {
-  selectedTeam: string;
   isVideoCallActive: boolean;
   setIsVideoCallActive: (active: boolean) => void;
 }
 
-export function TeamsHeader({ selectedTeam, isVideoCallActive, setIsVideoCallActive }: TeamsHeaderProps) {
+export function TeamsHeader({ isVideoCallActive, setIsVideoCallActive }: TeamsHeaderProps) {
+  const { chats, activeChat } = useChat();
+  const currentChat = chats.find(chat => chat.id === activeChat);
+
   return (
     <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm">
       <div className="flex items-center space-x-6">
         <div className="flex items-center space-x-2">
-          <h1 className="text-lg font-semibold text-gray-900"># {selectedTeam}</h1>
+          <h1 className="text-lg font-semibold text-gray-900">
+            {currentChat?.type === "team" ? "# " : ""}
+            {currentChat?.name || "Select a chat"}
+          </h1>
           <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
             <Info className="h-4 w-4" />
           </Button>
