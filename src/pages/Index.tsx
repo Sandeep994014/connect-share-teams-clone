@@ -45,10 +45,18 @@ const Index = () => {
               )}
               
               {activeView === "calendar" && !isVideoCallActive && (
-                <div className="flex-1 p-6">
-                  <h2 className="text-2xl font-bold mb-4">Calendar</h2>
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <p className="text-gray-600">Calendar view coming soon...</p>
+                <div className="flex-1 p-6 bg-white">
+                  <div className="max-w-4xl mx-auto">
+                    <h2 className="text-2xl font-bold mb-6 text-gray-900">Calendar</h2>
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                      <div className="text-center">
+                        <div className="w-16 h-16 bg-[#5B5FC7] rounded-full flex items-center justify-center mx-auto mb-4">
+                          <span className="text-white text-2xl">📅</span>
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Calendar integration coming soon</h3>
+                        <p className="text-gray-600">Schedule and manage team meetings, events, and deadlines.</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

@@ -1,6 +1,6 @@
 
 import { useState, useRef } from "react";
-import { Send, Paperclip, Smile, File } from "lucide-react";
+import { Send, Paperclip, Smile, File, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,6 +14,7 @@ interface Message {
   timestamp: string;
   type: "text" | "file";
   fileName?: string;
+  isMe?: boolean;
 }
 
 interface ChatAreaProps {
@@ -25,9 +26,10 @@ const sampleMessages: Message[] = [
     id: "1",
     user: "Sarah Johnson",
     avatar: "SJ",
-    content: "Hey team! Just wanted to share the latest design mockups for the project.",
+    content: "Hey team! Just wanted to share the latest design mockups for the project. Looking forward to your feedback!",
     timestamp: "10:30 AM",
-    type: "text"
+    type: "text",
+    isMe: false
   },
   {
     id: "2",
@@ -36,15 +38,17 @@ const sampleMessages: Message[] = [
     content: "project-specs.pdf",
     timestamp: "10:32 AM",
     type: "file",
-    fileName: "project-specs.pdf"
+    fileName: "project-specs.pdf",
+    isMe: false
   },
   {
     id: "3",
     user: "Alex Rivera",
     avatar: "AR",
-    content: "Looks great! I'll review the specifications and get back to you by EOD.",
+    content: "Looks great! I'll review the specifications and get back to you by EOD. Thanks for sharing this.",
     timestamp: "10:35 AM",
-    type: "text"
+    type: "text",
+    isMe: false
   }
 ];
 
@@ -62,7 +66,8 @@ export function ChatArea({ teamName }: ChatAreaProps) {
         avatar: "Y",
         content: newMessage,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        type: "text"
+        type: "text",
+        isMe: true
       };
       setMessages([...messages, message]);
       setNewMessage("");
@@ -79,7 +84,8 @@ export function ChatArea({ teamName }: ChatAreaProps) {
         content: file.name,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         type: "file",
-        fileName: file.name
+        fileName: file.name,
+        isMe: true
       };
       setMessages([...messages, message]);
     }
@@ -91,27 +97,37 @@ export function ChatArea({ teamName }: ChatAreaProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white">
+    <div className="flex-1 flex flex-col bg-gray-50">
       <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+        <div className="space-y-6">
           {messages.map((message) => (
             <div key={message.id} className="flex space-x-3">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold ${
+                message.isMe ? 'bg-[#5B5FC7]' : 'bg-gray-600'
+              }`}>
                 {message.avatar}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-1">
-                  <span className="font-medium text-gray-900">{message.user}</span>
+              <div className="flex-1 max-w-3xl">
+                <div className="flex items-center space-x-3 mb-2">
+                  <span className="font-semibold text-gray-900 text-sm">{message.user}</span>
                   <span className="text-xs text-gray-500">{message.timestamp}</span>
+                  <Button variant="ghost" size="sm" className="opacity-0 hover:opacity-100 transition-opacity h-6 w-6 p-0">
+                    <MoreHorizontal className="h-3 w-3" />
+                  </Button>
                 </div>
                 {message.type === "text" ? (
-                  <p className="text-gray-700">{message.content}</p>
+                  <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
+                    <p className="text-gray-800 leading-relaxed">{message.content}</p>
+                  </div>
                 ) : (
-                  <div className="flex items-center space-x-2 bg-gray-50 rounded-lg p-3 border">
-                    <File className="h-5 w-5 text-blue-500" />
-                    <span className="text-blue-600 hover:underline cursor-pointer">
-                      {message.fileName}
-                    </span>
+                  <div className="flex items-center space-x-3 bg-white rounded-lg p-3 shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer max-w-xs">
+                    <File className="h-5 w-5 text-[#5B5FC7]" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[#5B5FC7] hover:underline font-medium text-sm block truncate">
+                        {message.fileName}
+                      </span>
+                      <span className="text-xs text-gray-500">Click to download</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -120,8 +136,8 @@ export function ChatArea({ teamName }: ChatAreaProps) {
         </div>
       </ScrollArea>
       
-      <div className="border-t border-gray-200 p-4">
-        <div className="flex items-center space-x-2">
+      <div className="border-t border-gray-200 bg-white p-4">
+        <div className="flex items-end space-x-3">
           <input
             ref={fileInputRef}
             type="file"
@@ -133,9 +149,9 @@ export function ChatArea({ teamName }: ChatAreaProps) {
             variant="ghost"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 h-9 w-9 p-0"
           >
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="h-4 w-4" />
           </Button>
           
           <div className="relative">
@@ -143,35 +159,42 @@ export function ChatArea({ teamName }: ChatAreaProps) {
               variant="ghost"
               size="sm"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 h-9 w-9 p-0"
             >
-              <Smile className="h-5 w-5" />
+              <Smile className="h-4 w-4" />
             </Button>
             
             {showEmojiPicker && (
-              <div className="absolute bottom-full mb-2 left-0">
+              <div className="absolute bottom-full mb-2 left-0 z-50">
                 <EmojiPicker onEmojiSelect={handleEmojiSelect} />
               </div>
             )}
           </div>
           
           <div className="flex-1">
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder={`Type a message to ${teamName}...`}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="border-gray-200"
-            />
+            <div className="relative">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder={`Type a message in ${teamName}...`}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                className="pr-12 border-gray-300 focus:border-[#5B5FC7] focus:ring-[#5B5FC7] rounded-lg"
+              />
+              <Button 
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim()}
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[#5B5FC7] hover:text-[#4A4FB5] hover:bg-gray-100 h-8 w-8 p-0 disabled:opacity-50"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          
-          <Button 
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+        </div>
+        
+        <div className="text-xs text-gray-500 mt-2">
+          Press Enter to send, Shift+Enter for new line
         </div>
       </div>
     </div>
